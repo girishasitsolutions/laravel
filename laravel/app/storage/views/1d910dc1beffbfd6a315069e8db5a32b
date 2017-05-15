@@ -1,0 +1,10 @@
+<?php if(Session::has('message')): ?>
+    <div class="flash-message success-msg"><?php echo Session::get('message'); ?></div>
+<?php elseif(Session::has('errormessage')): ?>
+    <div class="flash-message failure-msg"><?php echo Session::get('errormessage'); ?></div>
+<?php endif; ?>
+<script type="text/javascript">
+	jQuery(document).ready(function(){
+		jQuery('.flash-message').delay(3000).fadeOut();
+	});
+</script>

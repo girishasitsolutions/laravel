@@ -1,0 +1,77 @@
+<?php
+	$action 		= (Route::currentRouteAction())?explode('@', Route::currentRouteAction()):'';
+	$controller		= (isset($action[0]) and $action[0])?$action[0]:'';
+	$current_action = (isset($action[1]) and $action[1])?$action[1]:'';
+	
+	$role_id = Route::input('role_id'); 
+$logged_in_role_id = Auth::check()?Auth::User()->role_id:2; ?>
+<aside>
+	<div id="sidebar"  class="nav-collapse">
+		<ul class="sidebar-menu" id="nav-accordion"><?php
+			$class = ($current_action == 'getDashBoard')?'active':null; ?>
+			<li>
+				<a href="<?php echo URL::to('admin/dashboard'); ?>">
+					<i class="fa fa-dashboard"></i>
+					<span>Dashboard</span>
+				</a>
+			</li><?php 
+					
+			$class = ((Auth::User()->role_id  == Route::input('role_id') OR Route::input('role_id') =="") and ($current_action == 'admin_change_password' || ($current_action == 'admin_update_profile'))) ?'active':null; ?>
+			<li class="sub-menu">
+				<a href="javascript:;" class="<?php echo $class; ?>">
+					<i class="fa fa-user"></i>
+					<span><?php echo Auth::User()->role_id == 2?'Client Profile':'Admin Management'; ?></span>
+				</a>
+				
+				<ul class="sub">
+					<li class="<?php echo ( $current_action == 'admin_update_profile')?'active':''; ?>"><a  href="<?php echo URL::to('admin/update_profile'); ?>">Update Profile</a></li>
+					<li class="<?php echo ( $current_action == 'admin_change_password')?'active':''; ?>"><a  href="<?php echo URL::to('admin/users/change_password/'.Auth::User()->role_id.'/'. Auth::id()); ?>">Change Password</a></li>
+				</ul>
+			</li>
+			
+			<?php if(Auth::User()->role_id == 1): ?>
+				<?php $class = ((Route::input('role_id') == 2 && $controller =="UserController" && (in_array($current_action, array('admin_change_password', 'admin_del', 'admin_view', 'admin_edit', 'admin_index')))) OR $current_action == 'admin_add')?'active':null;  ?>
+				<li class="sub-menu">
+					<a href="javascript:;" class="<?php echo $class; ?>">
+						<i class="fa fa-users"></i>
+						<span>Client Management</span>
+					</a>
+					
+					<ul class="sub">
+						<li class="<?php echo in_array($current_action, array('admin_view', 'admin_index', 'admin_change_password', 'admin_edit'))?'active':''; ?>"><a  href="<?php echo URL::to('admin/users/2'); ?>">Clients List &nbsp;<span class="badge bg-primary"><?php echo GeneralHelper::getClientdataCount(0); ?></span></a></li>
+						<li class="<?php echo ($current_action == 'admin_add')?'active':''; ?>"><a  href="<?php echo URL::to('admin/users/add'); ?>">Add a Client</a></li>
+						<li class="<?php echo ($current_action == 'admin_del')?'active':''; ?>"><a  href="<?php echo URL::to('admin/users/del/2'); ?>">Removed Clients &nbsp;<span class="badge bg-primary"><?php echo GeneralHelper::getClientdataCount(1); ?></span></a></li>
+					</ul>
+				</li>
+			<?php endif; ?>	
+			
+			<?php $class = ($controller == 'UserController' && in_array($current_action, array('export_data', 'admin_import_all_data', 'admin_import_data', 'import_data_list', 'admin_view_patient', 'admin_patient_edit')))?'active':null;  ?>
+			<li class="sub-menu">
+				<a href="javascript:;" class="<?php echo $class; ?>">
+					<i class="fa fa-briefcase"></i>
+					<span>A/R Management
+				</a>
+				
+				<ul class="sub">
+					<li class="<?php echo ((($current_action == 'import_data_list' OR $current_action == 'admin_view_patient' OR $current_action == 'admin_patient_edit')  && (Route::input('user_id') != 'deleted'&& Route::input('user_id') == 'all')) OR $current_action == 'admin_import_all_data')?'active':''; ?>"><a  href="<?php echo URL::to('admin/users/import_data_list/all'); ?>">All Imported A/R &nbsp;<span class="badge bg-primary"><?php echo GeneralHelper::getARdataCount(0); ?></span></a></li>
+					<?php if(Auth::User()->role_id == 1): ?><?php 
+						$companies_list  = GeneralHelper::getAllActiveCompanies(); ?>
+						<?php foreach($companies_list as $key=>$company): ?>
+							<?php $cur_class = (($current_action == 'import_data_list' OR $current_action == 'admin_view_patient' OR $current_action == 'admin_patient_edit')  && Route::input('user_id') != 'deleted' && Route::input('user_id') == $key)?'active':''; ?>
+							<li class="<?php echo $cur_class; ?>"><a  href="<?php echo URL::to('admin/users/import_data_list/'.$key); ?>"><?php echo $company; ?> A/R&nbsp;<span class="badge bg-primary"><?php echo GeneralHelper::getARdataCount(0, $key); ?></span></a></li>
+						<?php endforeach; ?>
+						<li class="<?php echo ($current_action == 'export_data')?'active':''; ?>"><a  href="<?php echo URL::to('admin/users/export_data'); ?>">Export A/R Data</a></li>
+						<li class="<?php echo ($current_action == 'admin_import_data')?'active':''; ?>"><a  href="<?php echo URL::to('admin/users/import_data'); ?>">Import file (.xls)</a></li>
+						
+						<li class="<?php echo (($current_action == 'import_data_list' OR $current_action == 'admin_view_patient') && Route::input('user_id') == 'deleted')?'active':''; ?>"><a  href="<?php echo URL::to('admin/users/import_data_list/deleted'); ?>">Deleted Accounts  &nbsp;<span class="badge bg-primary"><?php echo GeneralHelper::getARdataCount(1); ?></span></a></li>
+					<?php endif; ?>
+				</ul>
+			</li>
+			
+			<li>
+				<a class="" href="<?php echo URL::to('admin/logout'); ?>">
+				<span class="icon-box"><i class="fa fa-power-off"></i></span> Logout</a>
+			</li>
+		</ul>
+	</div>
+</aside> 
